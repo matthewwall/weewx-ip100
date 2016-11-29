@@ -240,7 +240,7 @@ if __name__ == '__main__':
             print packet
             exit(0)
 
-        url = "http://%s:%s" % (host, port)
+        url = "http://%s:%s" % (options.host, options.port)
         print "get data from %s" % url
         data = IP100Station.get_data(url)
         if options.debug:
