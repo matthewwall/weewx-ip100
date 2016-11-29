@@ -100,7 +100,7 @@ class IP100Driver(weewx.drivers.AbstractDevice):
         else:
             host = stn_dict.get('host', '192.168.1.12')
             port = int(stn_dict.get('port', 80))
-            self.station_url = "http://%s:%s" % (host, port)
+            self.station_url = "http://%s:%s/status.xml" % (host, port)
         loginf("station url is %s" % self.station_url)
         self.poll_interval = int(stn_dict.get('poll_interval', 2))
         loginf("poll interval is %s" % self.poll_interval)
