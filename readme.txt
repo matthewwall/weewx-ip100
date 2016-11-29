@@ -1,0 +1,39 @@
+weewx-ip100
+
+This is a weewx driver that gets data from a Rainwise IP-100.
+
+
+===============================================================================
+Installation
+
+0) install weewx, select 'Simulator' driver
+
+http://weewx.com/docs/usersguide.htm#installing
+
+1) download the driver
+
+wget -O weewx-ip100.zip https://github.com/matthewwall/weewx-ip100/archive/master.zip
+
+2) install the driver
+
+sudo wee_extension --install weewx-ip100.zip
+
+3) configure the driver
+
+sudo wee_config --reconfigure --driver=user.ip100
+
+4) start weewx
+
+sudo /etc/init.d/weewx start
+
+
+===============================================================================
+Driver options
+
+Use the host and port options to tell the driver where to find the IP-100:
+
+[IP100]
+    driver = user.ip100
+    port = 80
+    host = 192.168.1.12
+    poll_interval = 2 # how often to query the IP-100, in seconds

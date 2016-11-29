@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- Weather and hardware paramters for the IP-100, min's, max's and accumulations are for the current day -->
+<status>
+ <hardware>
+   <serial_number></serial_number>
+   <firmware_version>1074</firmware_version>
+   <clock>2016/08/01 15:51:52</clock>
+   <station_volts>7.0</station_volts>
+   <network>
+     <MAC_address>0090C2DE0164</MAC_address>
+     <IP_address>192.168.10.101</IP_address>
+     <subnet>255.255.255.0</subnet>
+     <gateway>192.168.10.1</gateway>
+   </network>
+   <interval>1</interval>
+   <base_units>English</base_units>
+   <speed_units>mph</speed_units>
+ </hardware>
+
+ <weather>
+   <temperature_outside>
+     <current>75.1</current>
+     <max>81.1</max>
+     <min>54.6</min>
+     </temperature_outside>
+
+   <humidity>
+     <current>57</current>
+     <max>99</max>
+     <min>47</min>
+     </humidity>
+
+   <pressure>
+     <current>30.13</current>
+     <max>30.17</max>
+     <min>30.12</min>
+     </pressure>
+
+   <precipitation>
+     <current>0.00</current>
+     </precipitation>
+
+   <wind>
+     <speed>1.2</speed>
+     <direction>247</direction>
+     <gust_speed>7.0</gust_speed>
+     <gust_direction>247</gust_direction>
+     </wind>
+
+   <temperature_inside>
+     <current>73.0</current>
+     <max>77.0</max>
+     <min>71.0</min>
+     </temperature_inside>
+   
+   <solar_radiation>
+     <current>229</current>
+     <max>15743696</max>
+     <min></min>
+   </solar_radiation>
+ </weather>
+</status>
