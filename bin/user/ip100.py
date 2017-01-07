@@ -31,10 +31,10 @@ def logerr(msg):
 
 
 def loader(config_dict, engine):
-    return IP100(**config_dict[DRIVER_NAME])
+    return IP100Driver(**config_dict[DRIVER_NAME])
 
-#def configurator_loader(config_dict):
-#    return IP100Configurator()
+def configurator_loader(config_dict):
+    return IP100Configurator()
 
 def confeditor_loader():
     return IP100ConfEditor()
@@ -70,11 +70,13 @@ class IP100Configurator(weewx.drivers.AbstractConfigurator):
         else:
             self.show_info(station)
 
-    def show_info(self, station):
+    @staticmethod
+    def show_info(station):
         """Query the station then display the settings."""
         # FIXME: implement show_info
 
-    def show_current(self, station):
+    @staticmethod
+    def show_current(station):
         """Display latest readings from the station."""
         for packet in station.genLoopPackets():
             print packet
@@ -112,12 +114,6 @@ class IP100Driver(weewx.drivers.AbstractDevice):
     def hardware_name(self):
         return "IP-100"
 
-    def openPort(self):
-        pass
-        
-    def closePort(self):
-        pass
-
     def genLoopPackets(self):
         ntries = 0
         while ntries < self.max_tries:
@@ -150,13 +146,11 @@ class IP100Driver(weewx.drivers.AbstractDevice):
 class IP100Station(object):
     @staticmethod
     def get_data(url):
-        content = None
         try:
             response = urllib2.urlopen(url)
-            content = response.read()
+            return response.read()
         except urllib2.HTTPError, e:
             raise WeeWxIOError("get data failed: %s" % e)
-        return content
 
     @staticmethod
     def parse_data(data):
