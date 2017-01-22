@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-# Copyright 2016 Matthew Wall, all rights reserved
+# Copyright 2016 Matthew Wall
+# Distributed under the terms of the GNU Public License (GPLv3)
 
 """Driver for collecting data from Rainwise IP-100"""
 
@@ -12,7 +13,7 @@ import weewx
 import weewx.drivers
 
 DRIVER_NAME = 'IP100'
-DRIVER_VERSION = '0.1'
+DRIVER_VERSION = '0.2'
 
 def logmsg(dst, msg):
     syslog.syslog(dst, 'ip100: %s' % msg)
@@ -97,6 +98,7 @@ class IP100Driver(weewx.drivers.AbstractDevice):
         'radiation': 'solar_radiation'}
 
     def __init__(self, **stn_dict):
+        loginf('driver version is %s' % DRIVER_VERSION)
         if 'station_url' in stn_dict:
             self.station_url = stn_dict['station_url']
         else:
@@ -106,7 +108,10 @@ class IP100Driver(weewx.drivers.AbstractDevice):
         loginf("station url is %s" % self.station_url)
         self.poll_interval = int(stn_dict.get('poll_interval', 2))
         loginf("poll interval is %s" % self.poll_interval)
-        self.sensor_map = stn_dict.get('sensor_map', IP100Driver.DEFAULT_MAP)
+        self.sensor_map = dict(IP100Driver.DEFAULT_MAP)
+        if 'sensor_map' in stn_dict:
+            self.sensor_map.update(stn_dict['sensor_map'])
+        loginf("sensor map: %s" % self.sensor_map)
         self.max_tries = int(stn_dict.get('max_tries', 3))
         self.retry_wait = int(stn_dict.get('retry_wait', 5))
 

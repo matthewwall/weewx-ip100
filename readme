@@ -1,4 +1,6 @@
 weewx-ip100
+Copyright 2016 Matthew Wall
+Distributed under terms of the GPLv3
 
 This is a weewx driver that gets data from a Rainwise IP-100.
 
