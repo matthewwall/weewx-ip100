@@ -140,12 +140,12 @@ class IP100Driver(weewx.drivers.AbstractDevice):
                 yield packet
                 if self.poll_interval:
                     time.sleep(self.poll_interval)
-            except WeeWxIOError, e:
+            except weewx.WeeWxIOError, e:
                 loginf("failed attempt %s of %s: %s" %
                        (ntries, self.max_tries, e))
                 time.sleep(self.retry_wait)
         else:
-            raise WeeWxIOError("max tries %s exceeded" % self.max_tries)
+            raise weewx.WeeWxIOError("max tries %s exceeded" % self.max_tries)
 
 
 class IP100Station(object):
@@ -155,7 +155,7 @@ class IP100Station(object):
             response = urllib2.urlopen(url)
             return response.read()
         except urllib2.HTTPError, e:
-            raise WeeWxIOError("get data failed: %s" % e)
+            raise weewx.WeeWxIOError("get data failed: %s" % e)
 
     @staticmethod
     def parse_data(data):
@@ -194,7 +194,7 @@ class IP100Station(object):
                 pkt['wind_dir'] = float(c.find('direction').text)
                 pkt['gust_speed'] = float(c.find('gust_speed').text)
                 pkt['gust_dir'] = float(c.find('gust_direction').text)
-            elif c.find('current'):
+            elif c.find('current') is not None:
                 pkt[c.tag] = float(c.find('current').text)
             else:
                 logdbg("ignored %s" % c.tag)
