@@ -10,7 +10,7 @@ def loader():
 class IP100Installer(ExtensionInstaller):
     def __init__(self):
         super(IP100Installer, self).__init__(
-            version="0.3",
+            version="0.4",
             name='ip100',
             description='Capture weather data from Rainwise IP-100',
             author="Matthew Wall",

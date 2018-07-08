@@ -1,3 +1,6 @@
+0.4 08jul2018
+* handle more failures with retries
+
 0.3 04jul2018
 * fixed typos and logic - thanks to user Mark Sellers for testing!
 

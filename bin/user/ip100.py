@@ -7,13 +7,14 @@
 import syslog
 import time
 import urllib2
+import socket
 from xml.etree import ElementTree
 
 import weewx
 import weewx.drivers
 
 DRIVER_NAME = 'IP100'
-DRIVER_VERSION = '0.2'
+DRIVER_VERSION = '0.4'
 
 def logmsg(dst, msg):
     syslog.syslog(dst, 'ip100: %s' % msg)
@@ -154,7 +155,7 @@ class IP100Station(object):
         try:
             response = urllib2.urlopen(url)
             return response.read()
-        except urllib2.HTTPError, e:
+        except (socket.error, socket.timeout, urllib2.HTTPError), e:
             raise weewx.WeeWxIOError("get data failed: %s" % e)
 
     @staticmethod
