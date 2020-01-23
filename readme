@@ -3,6 +3,7 @@ Copyright 2016 Matthew Wall
 Distributed under terms of the GPLv3
 
 This is a weewx driver that gets data from a Rainwise IP-100.
+Tested against IP100 firmware 2082.
 
 
 ===============================================================================
@@ -39,3 +40,10 @@ Use the host and port options to tell the driver where to find the IP-100:
     port = 80
     host = 192.168.1.12
     poll_interval = 2 # how often to query the IP-100, in seconds
+    # The number of seconds to wait for the newtork to come up.
+    # (Useful on a Raspberry Pi, 10s recommended.)
+    wait_for_network = 0
+    # The number of times to try to read from the IP100 before giving up.
+    max_tries = 3
+    # The number of seconds to wait before retrying a read from the IP100.
+    retry_wait = 5

@@ -4,33 +4,22 @@
 
 """Driver for collecting data from Rainwise IP-100"""
 
-import syslog
+from __future__ import absolute_import
+from __future__ import print_function
+import logging
 import time
-import urllib2
+import six.moves.urllib.request, six.moves.urllib.error, six.moves.urllib.parse
 import socket
 from xml.etree import ElementTree
 
 import weewx
 import weewx.drivers
+import weewx.wxformulas
+
+log = logging.getLogger(__name__)
 
 DRIVER_NAME = 'IP100'
-DRIVER_VERSION = '0.4'
-
-def logmsg(dst, msg):
-    syslog.syslog(dst, 'ip100: %s' % msg)
-
-def logdbg(msg):
-    logmsg(syslog.LOG_DEBUG, msg)
-
-def loginf(msg):
-    logmsg(syslog.LOG_INFO, msg)
-
-def logcrt(msg):
-    logmsg(syslog.LOG_CRIT, msg)
-
-def logerr(msg):
-    logmsg(syslog.LOG_ERR, msg)
-
+DRIVER_VERSION = '0.5'
 
 def loader(config_dict, engine):
     return IP100Driver(**config_dict[DRIVER_NAME])
@@ -54,6 +43,16 @@ class IP100ConfEditor(weewx.drivers.AbstractConfEditor):
 
     # The driver to use
     driver = user.ip100
+
+    # The number of seconds to wait for the newtork to come up.
+    # (Useful on a Raspberry Pi, 10s recommended.)
+    wait_for_network = 0
+
+    # The number of times to try to read from the IP100 before giving up.
+    max_tries = 3
+
+    # The number of seconds to wait before retrying a read from the IP100.
+    retry_wait = 5
 """
 
 
@@ -81,7 +80,7 @@ class IP100Configurator(weewx.drivers.AbstractConfigurator):
     def show_current(station):
         """Display latest readings from the station."""
         for packet in station.genLoopPackets():
-            print packet
+            print(packet)
             break
 
 
@@ -95,26 +94,38 @@ class IP100Driver(weewx.drivers.AbstractDevice):
         'windDir': 'wind_dir',
         'windGust': 'gust_speed',
         'windGustDir': 'gust_dir',
-        'rain': 'precipitation',
+        'day_rain_total': 'precipitation',
         'radiation': 'solar_radiation'}
 
     def __init__(self, **stn_dict):
-        loginf('driver version is %s' % DRIVER_VERSION)
+        log.info('driver version is %s' % DRIVER_VERSION)
         if 'station_url' in stn_dict:
             self.station_url = stn_dict['station_url']
         else:
             host = stn_dict.get('host', '192.168.1.12')
             port = int(stn_dict.get('port', 80))
             self.station_url = "http://%s:%s/status.xml" % (host, port)
-        loginf("station url is %s" % self.station_url)
+        log.info("station url is %s" % self.station_url)
+        # Sleep wait_for_network seconds before attempting network traffic
+        wait_for_network = int(stn_dict.get('wait_for_network', 0))
+        log.info("wait for network is %s (seconds)" % wait_for_network)
+        time.sleep(wait_for_network)
         self.poll_interval = int(stn_dict.get('poll_interval', 2))
-        loginf("poll interval is %s" % self.poll_interval)
+        log.info("poll interval is %s" % self.poll_interval)
         self.sensor_map = dict(IP100Driver.DEFAULT_MAP)
         if 'sensor_map' in stn_dict:
             self.sensor_map.update(stn_dict['sensor_map'])
-        loginf("sensor map: %s" % self.sensor_map)
+        log.info("sensor map: %s" % self.sensor_map)
         self.max_tries = int(stn_dict.get('max_tries', 3))
         self.retry_wait = int(stn_dict.get('retry_wait', 5))
+
+        # track the last rain counter value so we can determine deltas
+        self.previous_rain_total = None
+
+    @staticmethod
+    def _rain_total_to_delta(rain_total, previous_rain_total):
+        # calculate the rain delta between the current and previous rain totals.
+        return weewx.wxformulas.calculate_rain(rain_total, previous_rain_total)
 
     @property
     def hardware_name(self):
@@ -126,9 +137,9 @@ class IP100Driver(weewx.drivers.AbstractDevice):
             ntries += 1
             try:
                 data = IP100Station.get_data(self.station_url)
-                logdbg("data: %s" % data)
+                log.debug("data: %s" % data)
                 pkt = IP100Station.parse_data(data)
-                logdbg("raw packet: %s" % pkt)
+                log.debug("raw packet: %s" % pkt)
                 ntries = 0
                 packet = {'dateTime': int(time.time() + 0.5)}
                 if pkt['base_units'] == 'English':
@@ -138,11 +149,18 @@ class IP100Driver(weewx.drivers.AbstractDevice):
                 for k in self.sensor_map:
                     if self.sensor_map[k] in pkt:
                         packet[k] = pkt[self.sensor_map[k]]
+                if 'day_rain_total' in packet:
+                    packet['rain'] = self._rain_total_to_delta(
+                        packet['day_rain_total'], self.previous_rain_total)
+                    self.previous_rain_total = packet['day_rain_total']
+                else:
+                    log.debug("no rain in packet: %s" % packet)
+                log.debug("packet: %s" % packet)
                 yield packet
                 if self.poll_interval:
                     time.sleep(self.poll_interval)
-            except weewx.WeeWxIOError, e:
-                loginf("failed attempt %s of %s: %s" %
+            except weewx.WeeWxIOError as e:
+                log.info("failed attempt %s of %s: %s" %
                        (ntries, self.max_tries, e))
                 time.sleep(self.retry_wait)
         else:
@@ -153,9 +171,10 @@ class IP100Station(object):
     @staticmethod
     def get_data(url):
         try:
-            response = urllib2.urlopen(url)
+            response = six.moves.urllib.request.urlopen(url)
             return response.read()
-        except (socket.error, socket.timeout, urllib2.HTTPError), e:
+        except (socket.error, socket.timeout, six.moves.urllib.error.HTTPError,
+                six.moves.urllib.error.URLError) as e:
             raise weewx.WeeWxIOError("get data failed: %s" % e)
 
     @staticmethod
@@ -167,15 +186,15 @@ class IP100Station(object):
                 pkt.update(IP100Station.parse_hardware(root.find('hardware')))
                 pkt.update(IP100Station.parse_weather(root.find('weather')))
             else:
-                logerr("no status element in data")
-        except ElementTree.ParseError, e:
-            logdbg("parse failed: %s" % e)
+                log.error("no status element in data")
+        except ElementTree.ParseError as e:
+            log.debug("parse failed: %s" % e)
         return pkt
 
     @staticmethod
     def parse_hardware(hw):
         pkt = dict()
-        if not hw:
+        if hw is None:
             return pkt
         for c in hw:
             if len(c) == 0:
@@ -187,7 +206,7 @@ class IP100Station(object):
     @staticmethod
     def parse_weather(w):
         pkt = dict()
-        if not w:
+        if w is None:
             return pkt
         for c in w:
             if c.tag == 'wind':
@@ -198,17 +217,19 @@ class IP100Station(object):
             elif c.find('current') is not None:
                 pkt[c.tag] = float(c.find('current').text)
             else:
-                logdbg("ignored %s" % c.tag)
+                log.debug("ignored %s" % c.tag)
         return pkt
 
 
 if __name__ == '__main__':
     import optparse
 
+    import weewx
+    import weeutil.logger
+
     usage = """%prog [options] [--debug] [--help]"""
 
     def main():
-        syslog.openlog('wee_ip100', syslog.LOG_PID | syslog.LOG_CONS)
         parser = optparse.OptionParser(usage=usage)
         parser.add_option('--version', dest='version', action='store_true',
                           help='display driver version')
@@ -224,28 +245,30 @@ if __name__ == '__main__':
         (options, _) = parser.parse_args()
 
         if options.version:
-            print "ip100 driver version %s" % DRIVER_VERSION
+            print("ip100 driver version %s" % DRIVER_VERSION)
             exit(1)
 
-        if options.debug is not None:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_DEBUG))
+        weeutil.logger.setup('ip100', {})
+
+        if options.debug:
+            weewx.debug = 1
         else:
-            syslog.setlogmask(syslog.LOG_UPTO(syslog.LOG_INFO))
+            weewx.debug = 0
 
         if options.filename:
             data = ''
             with open(options.filename, "r") as f:
                 data = f.read()
             packet = IP100Station.parse_data(data)
-            print packet
+            print(packet)
             exit(0)
 
-        url = "http://%s:%s" % (options.host, options.port)
-        print "get data from %s" % url
+        url = "http://%s:%s/status.xml" % (options.host, options.port)
+        print("get data from %s" % url)
         data = IP100Station.get_data(url)
         if options.debug:
-            print "data: ", data
+            print("data: ", data)
         packet = IP100Station.parse_data(data)
-        print "packet: ", packet
+        print("packet: ", packet)
 
     main()

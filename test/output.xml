@@ -3,14 +3,14 @@
 <status>
  <hardware>
    <serial_number></serial_number>
-   <firmware_version>1074</firmware_version>
-   <clock>2016/08/01 15:51:52</clock>
-   <station_volts>7.0</station_volts>
+   <firmware_version>2082</firmware_version>
+   <clock>2020/01/22 18:26:05</clock>
+   <station_volts>6.7</station_volts>
    <network>
-     <MAC_address>0090C2DE0164</MAC_address>
-     <IP_address>192.168.10.101</IP_address>
-     <subnet>255.255.255.0</subnet>
-     <gateway>192.168.10.1</gateway>
+   		<MAC_address>000000000000</MAC_address>
+   		<IP_address>192.168.168.176</IP_address>
+		<subnet>255.255.255.0</subnet>
+		<gateway>192.168.168.1</gateway>
    </network>
    <interval>1</interval>
    <base_units>English</base_units>
@@ -18,45 +18,51 @@
  </hardware>
 
  <weather>
-   <temperature_outside>
-     <current>75.1</current>
-     <max>81.1</max>
-     <min>54.6</min>
-     </temperature_outside>
+	<temperature_outside>
+		<current>52.8</current>
+		<max>65.1</max>
+		<min>52.0</min>
+	</temperature_outside>
 
-   <humidity>
-     <current>57</current>
-     <max>99</max>
-     <min>47</min>
-     </humidity>
+	<humidity>
+		<current>89</current>
+		<max>99</max>
+		<min>71</min>
+	</humidity>
 
-   <pressure>
-     <current>30.13</current>
-     <max>30.17</max>
-     <min>30.12</min>
-     </pressure>
+	<pressure>
+		<current>30.22</current>
+		<max>30.28</max>
+		<min>30.17</min>
+	</pressure>
 
-   <precipitation>
-     <current>0.00</current>
-     </precipitation>
+	<precipitation>
+		<current>0.03</current>
+	</precipitation>
 
-   <wind>
-     <speed>1.2</speed>
-     <direction>247</direction>
-     <gust_speed>7.0</gust_speed>
-     <gust_direction>247</gust_direction>
-     </wind>
+	<wind>
+		<speed>0.0</speed>
+		<direction>292</direction>
+		<gust_speed>0.0</gust_speed>
+		<gust_direction>292</gust_direction>
+	</wind>
 
-   <temperature_inside>
-     <current>73.0</current>
-     <max>77.0</max>
-     <min>71.0</min>
-     </temperature_inside>
-   
-   <solar_radiation>
-     <current>229</current>
-     <max>15743696</max>
-     <min></min>
-   </solar_radiation>
+	<temperature_inside>
+		<current>67.0</current>
+		<max>68.0</max>
+		<min>62.0</min>
+	</temperature_inside>
+	
+		
+	
+	
+	
+	
+	 
+	 	
+		
+	 	
+	
+	 	
  </weather>
 </status>
