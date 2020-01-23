@@ -52,17 +52,11 @@
 		<max>68.0</max>
 		<min>62.0</min>
 	</temperature_inside>
-	
-		
-	
-	
-	
-	
-	 
-	 	
-		
-	 	
-	
-	 	
+
+	<solar_radiation>
+		<current>229</current>
+		<max>15743696</max>
+		<min></min>
+	</solar_radiation>
  </weather>
 </status>
