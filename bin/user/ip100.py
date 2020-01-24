@@ -131,11 +131,22 @@ class IP100Driver(weewx.drivers.AbstractDevice):
     def hardware_name(self):
         return "IP-100"
 
+    def time_to_next_poll(self):
+        now = time.time()
+        next_poll_event = int(now / self.poll_interval) * self.poll_interval + self.poll_interval
+        log.debug('now: %f, poll_interval: %d, next_poll_event: %f' % (now, self.poll_interval, next_poll_event))
+        secs_to_poll = next_poll_event - now
+        log.debug('Next polling event in %f seconds' % secs_to_poll)
+        return secs_to_poll
+
     def genLoopPackets(self):
         ntries = 0
         while ntries < self.max_tries:
             ntries += 1
             try:
+                # Poll on poll_interval boundaries.
+                if self.poll_interval != 0:
+                    time.sleep(self.time_to_next_poll())
                 data = IP100Station.get_data(self.station_url)
                 log.debug("data: %s" % data)
                 pkt = IP100Station.parse_data(data)
@@ -157,8 +168,6 @@ class IP100Driver(weewx.drivers.AbstractDevice):
                     log.debug("no rain in packet: %s" % packet)
                 log.debug("packet: %s" % packet)
                 yield packet
-                if self.poll_interval:
-                    time.sleep(self.poll_interval)
             except weewx.WeeWxIOError as e:
                 log.info("failed attempt %s of %s: %s" %
                        (ntries, self.max_tries, e))
