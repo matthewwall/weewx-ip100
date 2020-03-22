@@ -44,10 +44,6 @@ class IP100ConfEditor(weewx.drivers.AbstractConfEditor):
     # The driver to use
     driver = user.ip100
 
-    # The number of seconds to wait for the newtork to come up.
-    # (Useful on a Raspberry Pi, 10s recommended.)
-    wait_for_network = 0
-
     # The number of times to try to read from the IP100 before giving up.
     max_tries = 3
 
@@ -106,10 +102,23 @@ class IP100Driver(weewx.drivers.AbstractDevice):
             port = int(stn_dict.get('port', 80))
             self.station_url = "http://%s:%s/status.xml" % (host, port)
         log.info("station url is %s" % self.station_url)
-        # Sleep wait_for_network seconds before attempting network traffic
-        wait_for_network = int(stn_dict.get('wait_for_network', 0))
-        log.info("wait for network is %s (seconds)" % wait_for_network)
-        time.sleep(wait_for_network)
+
+        # Don't go any further if the IP100 cannot be reached.
+        # If the machine was just rebooted, a temporary failure in name
+        # resolution is likely.  As such, try three times.
+        for i in range(5):
+            try:
+                response = six.moves.urllib.request.urlopen(self.station_url)
+                response.read()
+                break
+            except Exception as e:
+                log.info('%s: %s' % (type(e), e))
+                if i < 4:
+                    log.info('%s: Retrying.' % e)
+                    time.sleep(5)
+                else:
+                    raise e
+
         self.poll_interval = int(stn_dict.get('poll_interval', 2))
         log.info("poll interval is %s" % self.poll_interval)
         self.sensor_map = dict(IP100Driver.DEFAULT_MAP)
