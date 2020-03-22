@@ -112,7 +112,7 @@ class IP100Driver(weewx.drivers.AbstractDevice):
                 response.read()
                 break
             except Exception as e:
-                log.info('%s: %s' % (type(e), e))
+                log.debug('%s: %s' % (type(e), e))
                 if i < 4:
                     log.info('%s: Retrying.' % e)
                     time.sleep(5)
