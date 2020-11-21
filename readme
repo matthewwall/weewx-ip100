@@ -13,13 +13,11 @@ Installation
 
 http://weewx.com/docs/usersguide.htm#installing
 
-1) download the driver
-
-wget -O weewx-ip100.zip https://github.com/matthewwall/weewx-ip100/archive/master.zip
+1) download the lastest release
 
 2) install the driver
 
-sudo wee_extension --install weewx-ip100.zip
+sudo wee_extension --install weewx-ip100-0.5.zip
 
 3) configure the driver
 
