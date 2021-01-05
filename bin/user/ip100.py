@@ -91,7 +91,8 @@ class IP100Driver(weewx.drivers.AbstractDevice):
         'windGust': 'gust_speed',
         'windGustDir': 'gust_dir',
         'day_rain_total': 'precipitation',
-        'radiation': 'solar_radiation'}
+        'radiation': 'solar_radiation',
+        'supplyVoltage': 'station_volts'}
 
     def __init__(self, **stn_dict):
         log.info('driver version is %s' % DRIVER_VERSION)
